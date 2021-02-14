@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-
-export default function useAuth(auth) {
+import { auth } from 'config/firebase/client'
+export default function useAuth() {
   const [isSignedIn, setIsSignedIn] = useState(undefined)
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const unregisterAuthObserver = auth.onAuthStateChanged((user) => {
-      setIsSignedIn(!!user)
+    const unregisterAuthObserver = auth.onAuthStateChanged((resUser) => {
+      setIsSignedIn(!!resUser)
+      setUser(resUser)
     })
     return () => {
       unregisterAuthObserver()
     }
   }, [])
-  return { isSignedIn, setIsSignedIn }
+  return { isSignedIn, user, auth }
 }

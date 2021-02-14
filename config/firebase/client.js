@@ -1,5 +1,6 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
+import 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_API_KEY,
@@ -10,7 +11,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_APP_ID,
 }
 
-const firebaseApp = !firebase.apps.length
+const clientApp = !firebase.apps.length
   ? firebase.initializeApp(firebaseConfig)
   : firebase.app()
 
@@ -22,4 +23,7 @@ export const uiConfig = {
   },
 }
 
-export const auth = firebaseApp.auth()
+export const firestore = clientApp.firestore()
+export const auth = clientApp.auth()
+
+export default clientApp
