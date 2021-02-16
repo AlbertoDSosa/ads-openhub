@@ -1,7 +1,17 @@
-export default function Users() {
+import Head from 'next/head'
+
+const Users = () => {
   return (
-    <div>
+    <>
+      <Head>
+        <title>Users</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <h1>Users</h1>
-    </div>
+    </>
   )
 }
+
+Users.layout = 'default'
+
+export default Users

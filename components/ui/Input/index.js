@@ -4,9 +4,10 @@ import {
   FormControl,
   InputLabel,
   FormHelperText,
+  InputAdornment,
 } from '@material-ui/core'
 
-export default function CustomInput({ config, ...rest }) {
+const CustomInput = ({ config = {}, ...rest }) => {
   const {
     cType = 'default',
     ref,
@@ -24,3 +25,7 @@ export default function CustomInput({ config, ...rest }) {
     </FormControl>
   )
 }
+
+CustomInput.Adornment = InputAdornment
+
+export default CustomInput
