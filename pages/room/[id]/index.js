@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import Database from 'services/database'
 
 const Room = ({ meeting }) => {
   const { id } = JSON.parse(meeting)
@@ -17,16 +16,18 @@ const Room = ({ meeting }) => {
 
 export default Room
 
-export async function getServerSideProps({ params }) {
-  const { get } = Database({ collection: 'meetings' })
+export async function getServerSideProps({ params, req }) {
   const { id } = params
 
+  const { host } = req.headers
+
   try {
-    const meeting = await get({ id })
+    const res = await fetch(`http://${host}/api/meetings/${id}`)
+    const meeting = await res.json()
 
     return {
       props: {
-        meeting: JSON.stringify(meeting),
+        meeting: JSON.stringify(meeting.data),
       },
     }
   } catch (error) {
