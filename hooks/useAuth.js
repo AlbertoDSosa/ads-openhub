@@ -7,7 +7,8 @@ export default function useAuth() {
   useEffect(() => {
     const unregisterAuthObserver = auth.onAuthStateChanged((resUser) => {
       setIsSignedIn(!!resUser)
-      setUser(resUser)
+      const { uid: id, photoURL, phoneNumber, displayName, email } = resUser
+      setUser({ id, photoURL, phoneNumber, displayName, email })
     })
     return () => {
       unregisterAuthObserver()

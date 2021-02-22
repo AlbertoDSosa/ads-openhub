@@ -12,6 +12,7 @@ import CustomText from './Text'
 import CustomContainer from './Container'
 import CustomImage from './Image'
 import CustomCarousel from './Carousel'
+import CustomModal from './Modal'
 
 export const Avatar = CustomAvatar
 export const Button = CustomButton
@@ -27,3 +28,4 @@ export const Text = CustomText
 export const Container = CustomContainer
 export const Image = CustomImage
 export const Carousel = CustomCarousel
+export const Modal = CustomModal

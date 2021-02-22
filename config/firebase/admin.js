@@ -23,4 +23,4 @@ export const firestore = adminApp.firestore()
 
 export const auth = adminApp.auth()
 
-export default adminApp
+export default admin

@@ -1,11 +1,29 @@
+import { useState } from 'react'
 import Head from 'next/head'
-import { Text, Grid, Carousel, Box, Button, Input } from 'components/ui'
+import { useRouter } from 'next/router'
+import useDatabase from 'hooks/useDatabase'
+import useAuth from 'hooks/useAuth'
+
+import {
+  Text,
+  Grid,
+  Carousel,
+  Box,
+  Button,
+  Input,
+  Menu,
+  Modal,
+} from 'components/ui'
 // import styles from 'styles/Home.module.css'
 import { makeStyles } from '@material-ui/core/styles'
 import VideoCall from '@material-ui/icons/VideoCall'
 import Keyboard from '@material-ui/icons/Keyboard'
+import InsertLink from '@material-ui/icons/InsertLink'
+import Add from '@material-ui/icons/Add'
+import CalendarToday from '@material-ui/icons/CalendarToday'
 
 const { Adornment } = Input
+const { Item: MenuItem } = Menu
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,20 +40,50 @@ const useStyles = makeStyles((theme) => ({
   },
 
   hero: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
     padding: '.8rem 1.5rem',
   },
   addMeetingButtom: {
-    fontSize: '.5rem',
+    padding: '.64rem .8rem',
     marginRight: '.3rem',
     lineHeight: 1.5,
   },
   codeInput: {
     boxShadow: '0px 3px 1px -2px rgb(0 0 0 / 20%)',
+    marginRight: '.3rem',
+  },
+  modal: {
+    display: 'flex',
+    padding: theme.spacing(1),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalPaper: {
+    width: 400,
+    backgroundColor: theme.palette.background.paper,
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    position: 'relative',
+  },
+  modalClose: {
+    cursor: 'pointer',
+    position: 'absolute',
+    lineHeight: 0.7,
+    height: '1rem',
+    borderRadius: '99px',
+    border: '1px solid',
+    margin: '0.15rem',
+    padding: '0 .2rem',
+    top: 2,
+    right: 2,
+  },
+  modalDescripton: {
+    color: theme.palette.text.disabled,
+  },
+  modalCodeContainer: {
+    backgroundColor: theme.palette.action.disabled,
+    padding: '.5rem .8rem',
+    borderRadius: '5px',
   },
 }))
 
@@ -68,14 +116,97 @@ const carouselData = [
 
 const Home = () => {
   const classes = useStyles()
+  const router = useRouter()
+  const Meeting = useDatabase({ collection: 'meetings' })
+  const [meetingCode, setMeetingCode] = useState('')
+  const [inputMeetingCodeDisabled, setInputMeetingCodeDisabled] = useState(
+    false
+  )
+  const [showNewMeetingModal, setShowNewMeetingModal] = useState(false)
+  const [meetingCodeExist, setMeetingCodeExist] = useState(false)
+  const { user } = useAuth()
+
+  const modalBody = (
+    <div className={classes.modalPaper}>
+      <div
+        className={classes.modalClose}
+        onClick={() => setShowNewMeetingModal(false)}
+      >
+        x
+      </div>
+      <p className={classes.modalDescripton}>
+        Copia el código y compartelo con quien quieras o guardalo para acceder
+        más tarde.
+      </p>
+      <div className={classes.modalCodeContainer}>
+        <span className={classes.modalCode}>{meetingCode}</span>
+      </div>
+    </div>
+  )
+
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const handleOpenNewMeetingMenu = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleCloseNewMeetingMenu = () => {
+    setAnchorEl(null)
+  }
+
+  const handleChangeMeetingCode = (evt) => {
+    if (evt.target.value.length) {
+      setMeetingCodeExist(true)
+      setMeetingCode(evt.target.value)
+    } else {
+      setMeetingCodeExist(false)
+    }
+  }
+
+  const goToHallMeeting = () => {
+    Meeting.get({ id: meetingCode })
+      .then((meeting) => {
+        router.push(`/hall/${meeting.id}`)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
+
+  const goToRoomMeeting = ({ id }) => {
+    setMeetingCode(id)
+    setInputMeetingCodeDisabled(true)
+    setMeetingCodeExist(false)
+    router.push(`/room/${id}`)
+  }
+  const handleNewMeetingInfo = ({ id }) => {
+    setMeetingCode(id)
+    setShowNewMeetingModal(true)
+  }
+
+  const createNewMeeting = (action) => {
+    Meeting.add({ user: user.id })
+      .then((id) => {
+        if (action === 'now') {
+          goToRoomMeeting({ id })
+        } else if (action === 'later') {
+          handleNewMeetingInfo({ id })
+        }
+        handleCloseNewMeetingMenu()
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
+
   return (
     <>
       <Head>
         <title>Home</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Grid className={classes.root} container alignItems="center">
-        <Grid className={classes.hero} item xs={12} sm={6}>
+      <Grid container className={classes.root} alignItems="center">
+        <Grid className={classes.hero} item xs={12} sm={7}>
           <Box
             my={1}
             py={1}
@@ -91,38 +222,80 @@ const Home = () => {
               chatear, gestionar archivos y mucho más.
             </Text>
           </Box>
-          <Box
-            width="100%"
-            my={1}
-            py={1}
-            display="flex"
-            alignContent="flex-start"
-          >
+          <Box my={1} py={1} display={{ xs: 'block', sm: 'block', md: 'flex' }}>
+            <Box mb={1}>
+              <Button
+                className={classes.addMeetingButtom}
+                size="small"
+                variant="contained"
+                color="secondary"
+                startIcon={<VideoCall />}
+                aria-controls="simple-menu"
+                aria-haspopup="true"
+                onClick={handleOpenNewMeetingMenu}
+              >
+                Nueva reunión
+              </Button>
+            </Box>
+            <Box>
+              <Input
+                size="small"
+                variant="outlined"
+                placeholder="Código de reunión"
+                className={classes.codeInput}
+                onChange={handleChangeMeetingCode}
+                disabled={inputMeetingCodeDisabled}
+                InputProps={{
+                  startAdornment: (
+                    <Adornment position="start">
+                      <Keyboard />
+                    </Adornment>
+                  ),
+                }}
+              />
+            </Box>
             <Button
-              className={classes.addMeetingButtom}
-              size="small"
-              variant="contained"
-              color="secondary"
-              startIcon={<VideoCall />}
+              disabled={!meetingCodeExist}
+              onClick={() => goToHallMeeting()}
             >
-              Nueva reunión
+              Entrar
             </Button>
-            <Input
-              size="small"
-              variant="outlined"
-              placeholder="Código de reunión"
-              className={classes.codeInput}
-              InputProps={{
-                startAdornment: (
-                  <Adornment position="start">
-                    <Keyboard />
-                  </Adornment>
-                ),
-              }}
-            />
           </Box>
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleCloseNewMeetingMenu}
+          >
+            <MenuItem onClick={() => createNewMeeting('later')}>
+              <Box component="span" lineHeight={1} mr={1.5}>
+                <InsertLink />
+              </Box>
+              <Box>Crear una reunión para más tarde</Box>
+            </MenuItem>
+            <MenuItem onClick={() => createNewMeeting('now')}>
+              <Box component="span" lineHeight={1} mr={1.5}>
+                <Add />
+              </Box>
+              <Box>Iniciar una reunión</Box>
+            </MenuItem>
+            <MenuItem onClick={handleCloseNewMeetingMenu}>
+              <Box component="span" lineHeight={1} mr={1.5}>
+                <CalendarToday />
+              </Box>
+              <Box>Programar reunión en el calendario</Box>
+            </MenuItem>
+          </Menu>
+          <Modal
+            className={classes.modal}
+            open={showNewMeetingModal}
+            onClose={() => setShowNewMeetingModal(false)}
+          >
+            {modalBody}
+          </Modal>
         </Grid>
-        <Grid className={classes.carousel} item xs={12} sm={6}>
+        <Grid className={classes.carousel} item xs={12} sm={5}>
           <Carousel carouselData={carouselData} width={300} height={180} />
         </Grid>
       </Grid>

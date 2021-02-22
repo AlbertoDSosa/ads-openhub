@@ -1,4 +1,3 @@
-import { Fragment } from 'react'
 import DefaultLayout from './templates/Default'
 
 const layouts = {
@@ -12,7 +11,7 @@ const LayoutWrapper = (props) => {
     return <Layout {...props}>{props.children}</Layout>
   }
 
-  return <Fragment {...props}>{props.children}</Fragment>
+  return <div {...props}>{props.children}</div>
 }
 
 export default LayoutWrapper

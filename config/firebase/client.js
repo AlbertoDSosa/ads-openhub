@@ -26,4 +26,4 @@ export const uiConfig = {
 export const firestore = clientApp.firestore()
 export const auth = clientApp.auth()
 
-export default clientApp
+export default firebase
