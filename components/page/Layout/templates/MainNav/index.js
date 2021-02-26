@@ -2,12 +2,15 @@ import { useState } from 'react'
 import clsx from 'clsx'
 
 import useAuth from 'hooks/useAuth'
-import { Box, Text, Menu, Bar } from 'components/ui'
+import { Box, Text, Menu, Bar, Link } from 'components/ui'
 import { makeStyles } from '@material-ui/core/styles'
 
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
 import AccountCircle from '@material-ui/icons/AccountCircle'
+import Settings from '@material-ui/icons/Settings'
+
+import SettingsModal from 'components/page/SettingsModal'
 
 const { Item } = Menu
 
@@ -21,12 +24,16 @@ const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
   },
+  link: {
+    color: 'white !important',
+  },
 }))
 
 export default function MainNav({ openDrawer, toogleOpenDrawer }) {
   const { isSignedIn, auth } = useAuth()
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(null)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
   const open = Boolean(anchorEl)
 
   const onSignOut = () => {
@@ -53,8 +60,19 @@ export default function MainNav({ openDrawer, toogleOpenDrawer }) {
         <MenuIcon />
       </IconButton>
       <Text variant="h6" className={classes.title}>
-        ADS OpenHub
+        <Link to="/" className={classes.link}>
+          ADS OpenHub
+        </Link>
       </Text>
+      <Box>
+        <IconButton color="inherit" onClick={() => setShowSettingsModal(true)}>
+          <Settings />
+        </IconButton>
+        <SettingsModal
+          showModal={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+        />
+      </Box>
       {isSignedIn && (
         <Box>
           <IconButton
@@ -81,9 +99,9 @@ export default function MainNav({ openDrawer, toogleOpenDrawer }) {
             open={open}
             onClose={handleClose}
           >
-            <Item onClick={handleClose}>Profile</Item>
-            <Item onClick={handleClose}>My account</Item>
-            <Item onClick={onSignOut}>Sing Out</Item>
+            <Item onClick={handleClose}>Perfil</Item>
+            <Item onClick={handleClose}>Mi Cuenta</Item>
+            <Item onClick={onSignOut}>Salir</Item>
           </Menu>
         </Box>
       )}

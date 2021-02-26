@@ -4,16 +4,8 @@ import { useRouter } from 'next/router'
 import useDatabase from 'hooks/useDatabase'
 import useAuth from 'hooks/useAuth'
 
-import {
-  Text,
-  Grid,
-  Carousel,
-  Box,
-  Button,
-  Input,
-  Menu,
-  Modal,
-} from 'components/ui'
+import { Text, Grid, Carousel, Box, Button, Input, Menu } from 'components/ui'
+
 // import styles from 'styles/Home.module.css'
 import { makeStyles } from '@material-ui/core/styles'
 import VideoCall from '@material-ui/icons/VideoCall'
@@ -21,6 +13,8 @@ import Keyboard from '@material-ui/icons/Keyboard'
 import InsertLink from '@material-ui/icons/InsertLink'
 import Add from '@material-ui/icons/Add'
 import CalendarToday from '@material-ui/icons/CalendarToday'
+
+import MeetingInfoModal from 'components/page/MeetingInfoModal'
 
 const { Adornment } = Input
 const { Item: MenuItem } = Menu
@@ -38,7 +32,6 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(1),
     width: '100%',
   },
-
   hero: {
     padding: '.8rem 1.5rem',
   },
@@ -50,40 +43,6 @@ const useStyles = makeStyles((theme) => ({
   codeInput: {
     boxShadow: '0px 3px 1px -2px rgb(0 0 0 / 20%)',
     marginRight: '.3rem',
-  },
-  modal: {
-    display: 'flex',
-    padding: theme.spacing(1),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalPaper: {
-    width: 400,
-    backgroundColor: theme.palette.background.paper,
-    border: '2px solid #000',
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
-    position: 'relative',
-  },
-  modalClose: {
-    cursor: 'pointer',
-    position: 'absolute',
-    lineHeight: 0.7,
-    height: '1rem',
-    borderRadius: '99px',
-    border: '1px solid',
-    margin: '0.15rem',
-    padding: '0 .2rem',
-    top: 2,
-    right: 2,
-  },
-  modalDescripton: {
-    color: theme.palette.text.disabled,
-  },
-  modalCodeContainer: {
-    backgroundColor: theme.palette.action.disabled,
-    padding: '.5rem .8rem',
-    borderRadius: '5px',
   },
 }))
 
@@ -125,24 +84,6 @@ const Home = () => {
   const [showNewMeetingModal, setShowNewMeetingModal] = useState(false)
   const [meetingCodeExist, setMeetingCodeExist] = useState(false)
   const { user } = useAuth()
-
-  const modalBody = (
-    <div className={classes.modalPaper}>
-      <div
-        className={classes.modalClose}
-        onClick={() => setShowNewMeetingModal(false)}
-      >
-        x
-      </div>
-      <p className={classes.modalDescripton}>
-        Copia el código y compartelo con quien quieras o guardalo para acceder
-        más tarde.
-      </p>
-      <div className={classes.modalCodeContainer}>
-        <span className={classes.modalCode}>{meetingCode}</span>
-      </div>
-    </div>
-  )
 
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -268,7 +209,10 @@ const Home = () => {
             open={Boolean(anchorEl)}
             onClose={handleCloseNewMeetingMenu}
           >
-            <MenuItem onClick={() => createNewMeeting('later')}>
+            <MenuItem
+              id="meeting-info-modal"
+              onClick={() => createNewMeeting('later')}
+            >
               <Box component="span" lineHeight={1} mr={1.5}>
                 <InsertLink />
               </Box>
@@ -287,13 +231,12 @@ const Home = () => {
               <Box>Programar reunión en el calendario</Box>
             </MenuItem>
           </Menu>
-          <Modal
-            className={classes.modal}
-            open={showNewMeetingModal}
+          <MeetingInfoModal
+            showModal={showNewMeetingModal}
             onClose={() => setShowNewMeetingModal(false)}
-          >
-            {modalBody}
-          </Modal>
+            label="meeting-info-modal"
+            meetingCode={meetingCode}
+          />
         </Grid>
         <Grid className={classes.carousel} item xs={12} sm={5}>
           <Carousel carouselData={carouselData} width={300} height={180} />

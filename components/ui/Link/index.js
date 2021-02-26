@@ -7,8 +7,8 @@ export default function CustomLink(props) {
 
   if (type === 'nav') {
     return (
-      <NextLink href={to} as={as} {...rest} passHref>
-        <MuiLink>{children}</MuiLink>
+      <NextLink href={to} as={as} passHref>
+        <MuiLink {...rest}>{children}</MuiLink>
       </NextLink>
     )
   }

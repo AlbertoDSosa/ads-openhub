@@ -27,5 +27,8 @@ const CustomInput = ({ config = {}, ...rest }) => {
 }
 
 CustomInput.Adornment = InputAdornment
+CustomInput.FormControl = FormControl
+CustomInput.InputLabel = InputLabel
+CustomInput.FormHelperText = FormHelperText
 
 export default CustomInput
