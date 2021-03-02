@@ -7,6 +7,7 @@ import 'styles/globals.css'
 import SignInForm from 'components/page/SignInForm'
 import Layout from 'components/page/Layout'
 import { Spinner } from 'components/ui'
+import { MediaSettingsProvider } from 'contexts/MediaSettings'
 
 function App({ Component, pageProps }) {
   const { isSignedIn } = useAuth()
@@ -24,9 +25,11 @@ function App({ Component, pageProps }) {
   }
 
   return (
-    <Layout {...pageProps}>
-      <Component {...pageProps} />
-    </Layout>
+    <MediaSettingsProvider>
+      <Layout {...pageProps}>
+        <Component {...pageProps} />
+      </Layout>
+    </MediaSettingsProvider>
   )
 }
 

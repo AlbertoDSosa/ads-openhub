@@ -1,18 +1,17 @@
-import { useRef } from 'react'
+import { useRef, useContext, useEffect } from 'react'
 import useUserMedia from 'hooks/useUserMedia'
-
-const CAPTURE_OPTIONS = {
-  audio: false,
-  video: { facingMode: 'environment' },
-}
+import MediaSettingsContext from 'contexts/MediaSettings'
 
 function CameraPlayer() {
   const videoRef = useRef(null)
-  const { mediaStream } = useUserMedia(CAPTURE_OPTIONS)
+  const { contraints } = useContext(MediaSettingsContext)
+  const { mediaStream } = useUserMedia(contraints)
 
-  if (mediaStream && videoRef.current && !videoRef.current.srcObject) {
-    videoRef.current.srcObject = mediaStream
-  }
+  useEffect(() => {
+    if (mediaStream && mediaStream.active && videoRef.current) {
+      videoRef.current.srcObject = mediaStream
+    }
+  }, [contraints, mediaStream])
 
   function handleCanPlay() {
     videoRef.current.play()

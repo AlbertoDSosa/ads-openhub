@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState, useContext } from 'react'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
@@ -11,6 +11,8 @@ import { Modal, Grid, Text, Menu, Input, Box, Button } from 'components/ui'
 import Tabs, { Tab as UiTab, TabPanel } from 'components/ui/Tabs'
 import { FormControl, Select, FormGroup } from 'components/ui/Form'
 import useDevices from 'hooks/useDevices'
+import MediaSettingsContext from 'contexts/MediaSettings'
+import Camera from 'components/page/CameraPlayer'
 
 const { Content: ModalContent, Title: ModalTitle } = Modal
 const { Item: MenuItem } = Menu
@@ -18,10 +20,7 @@ const { InputLabel } = Input
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-    display: 'flex',
-    height: 224,
+    height: '60vh',
   },
   section: {
     padding: theme.spacing(0.5),
@@ -45,10 +44,15 @@ const useStyles = makeStyles((theme) => ({
   selectEmpty: {
     marginTop: theme.spacing(2),
   },
+  option: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 }))
 
 const Content = withStyles((theme) => ({
   root: {
+    height: '60vh',
     padding: theme.spacing(0.5),
     '&:first-child': {
       paddingTop: theme.spacing(0.5),
@@ -86,13 +90,32 @@ const Title = withStyles((theme) => ({
 function SettingsModal({ showModal, onClose, label, description }) {
   const classes = useStyles()
   const { mediaDevices } = useDevices()
-  const [value, setValue] = React.useState(0)
+  const [tap, setTap] = useState(0)
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue)
+  const { changeVideoSource, changeAudioSource } = useContext(
+    MediaSettingsContext
+  )
+  const [audioInput, setAudioInput] = useState('default')
+  const [audioOutput, setAudioOutput] = useState('default')
+  const [videoInput, setVideoInput] = useState('default')
+
+  const handleTabChange = (evt, newTap) => {
+    setTap(newTap)
   }
 
-  console.log(mediaDevices)
+  const handleVideoSourceChange = (evt, el) => {
+    const { value, device } = el.props
+    const { deviceId: id } = device
+    setVideoInput(value)
+    changeVideoSource({ id })
+  }
+  const handleAudioSourceChange = (evt, el) => {
+    const { value, device } = el.props
+    const { deviceId: id } = device
+    setAudioInput(value)
+    changeAudioSource({ id })
+  }
+
   return (
     <Modal
       open={showModal}
@@ -103,17 +126,27 @@ function SettingsModal({ showModal, onClose, label, description }) {
     >
       <Content>
         <Grid container display="flex">
-          <Grid item md={4} lg={4} className={classes.section}>
-            <Title disableTypography>
-              <Text variant="subtitle1">Configuración</Text>
-            </Title>
-            <Tabs orientation="vertical" value={value} onChange={handleChange}>
+          <Grid item xs={4} sm={3} md={3} lg={3} className={classes.section}>
+            <Box
+              display={{
+                xs: 'none',
+                sm: 'block',
+                md: 'block',
+                lg: 'block',
+                xl: 'block',
+              }}
+            >
+              <Title disableTypography>
+                <Text variant="subtitle1">Configuración</Text>
+              </Title>
+            </Box>
+            <Tabs orientation="vertical" value={tap} onChange={handleTabChange}>
               <Tab icon={<Speaker />} label="Audio" />
               <Tab icon={<Videocam />} label="Video" />
             </Tabs>
           </Grid>
           <Divider orientation="vertical" flexItem />
-          <Grid item md={8} lg={8} className={classes.section}>
+          <Grid item xs={7} sm={8} md={8} lg={8} className={classes.section}>
             <IconButton
               aria-label="close"
               className={classes.closeButton}
@@ -121,24 +154,36 @@ function SettingsModal({ showModal, onClose, label, description }) {
             >
               <Close />
             </IconButton>
-            <TabPanel value={value} index={0}>
-              <Box p={1} display="flex" flexDirection="column">
+            <TabPanel value={tap} index={0}>
+              <Box p={1} display="flex" flexDirection="column" width="100%">
                 <FormGroup row>
                   <FormControl className={classes.formControl}>
-                    <InputLabel
-                      shrink
-                      id="demo-simple-select-placeholder-label-label"
-                    >
+                    <InputLabel id="label-audio-input" shrink>
                       Micrófono
                     </InputLabel>
                     <Select
-                      labelId="demo-simple-select-placeholder-label-label"
-                      id="demo-simple-select-placeholder-label"
-                      onChange={handleChange}
-                      displayEmpty
+                      onChange={handleAudioSourceChange}
+                      labelId="label-audio-input"
+                      id="select-audio-input"
                       className={classes.selectEmpty}
+                      value={audioInput}
                     >
-                      <MenuItem value={10}>Ten</MenuItem>
+                      {mediaDevices &&
+                        mediaDevices.audioInputs.map((input) => {
+                          const { label, deviceId } = input
+
+                          return (
+                            <MenuItem
+                              device={input}
+                              value={deviceId}
+                              key={deviceId}
+                            >
+                              <Text className={classes.option} variant="body2">
+                                {label}
+                              </Text>
+                            </MenuItem>
+                          )
+                        })}
                     </Select>
                   </FormControl>
                   <Box display="flex" alignItems="center">
@@ -147,25 +192,34 @@ function SettingsModal({ showModal, onClose, label, description }) {
                 </FormGroup>
                 <FormGroup row>
                   <FormControl className={classes.formControl}>
-                    <InputLabel
-                      shrink
-                      id="demo-simple-select-placeholder-label-label"
-                    >
+                    <InputLabel id="label-audio-output" shrink>
                       Altavoces
                     </InputLabel>
                     <Select
-                      labelId="demo-simple-select-placeholder-label-label"
-                      id="demo-simple-select-placeholder-label"
-                      onChange={handleChange}
-                      displayEmpty
+                      labelId="label-audio-output"
+                      id="select-audio-input"
+                      value={audioOutput}
+                      onChange={(e, el) => {
+                        setAudioOutput(el.props.value)
+                      }}
                       className={classes.selectEmpty}
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value={10}>Ten</MenuItem>
-                      <MenuItem value={20}>Twenty</MenuItem>
-                      <MenuItem value={30}>Thirty</MenuItem>
+                      {mediaDevices &&
+                        mediaDevices.audioOutputs.map((output) => {
+                          const { label, deviceId } = output
+
+                          return (
+                            <MenuItem
+                              device={output}
+                              value={deviceId}
+                              key={deviceId}
+                            >
+                              <Text className={classes.option} variant="body2">
+                                {label}
+                              </Text>
+                            </MenuItem>
+                          )
+                        })}
                     </Select>
                   </FormControl>
                   <Box display="flex" alignItems="center">
@@ -174,30 +228,46 @@ function SettingsModal({ showModal, onClose, label, description }) {
                 </FormGroup>
               </Box>
             </TabPanel>
-            <TabPanel value={value} index={1}>
+            <TabPanel value={tap} index={1}>
               <Box p={1} display="flex" flexDirection="column">
                 <FormControl className={classes.formControl}>
-                  <InputLabel
-                    shrink
-                    id="demo-simple-select-placeholder-label-label"
-                  >
+                  <InputLabel id="input-label-video-input" shrink>
                     Cámara
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-placeholder-label-label"
-                    id="demo-simple-select-placeholder-label"
-                    onChange={handleChange}
-                    displayEmpty
+                    labelId="label-video-input"
+                    id="select-video-input"
+                    onChange={handleVideoSourceChange}
+                    value={videoInput}
                     className={classes.selectEmpty}
                   >
-                    <MenuItem value="">
-                      <em>None</em>
+                    <MenuItem
+                      device={{ deviceId: 'default' }}
+                      value="default"
+                      key="default"
+                    >
+                      <Text className={classes.option} variant="body2">
+                        Predeterminado
+                      </Text>
                     </MenuItem>
-                    <MenuItem value={10}>Ten</MenuItem>
-                    <MenuItem value={20}>Twenty</MenuItem>
-                    <MenuItem value={30}>Thirty</MenuItem>
+                    {mediaDevices &&
+                      mediaDevices.videoInputs.map((input) => {
+                        const { label, deviceId } = input
+                        return (
+                          <MenuItem
+                            device={input}
+                            value={deviceId}
+                            key={deviceId}
+                          >
+                            <Text className={classes.option} variant="body2">
+                              {label}
+                            </Text>
+                          </MenuItem>
+                        )
+                      })}
                   </Select>
                 </FormControl>
+                <Camera />
               </Box>
             </TabPanel>
           </Grid>
