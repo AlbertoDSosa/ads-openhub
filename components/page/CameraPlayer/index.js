@@ -1,17 +1,13 @@
-import { useRef, useContext, useEffect } from 'react'
-import useUserMedia from 'hooks/useUserMedia'
-import MediaSettingsContext from 'contexts/MediaSettings'
+import { useRef, useEffect } from 'react'
 
-function CameraPlayer() {
+function CameraPlayer({ mediaStream }) {
   const videoRef = useRef(null)
-  const { contraints } = useContext(MediaSettingsContext)
-  const { mediaStream } = useUserMedia(contraints)
 
   useEffect(() => {
     if (mediaStream && mediaStream.active && videoRef.current) {
       videoRef.current.srcObject = mediaStream
     }
-  }, [contraints, mediaStream])
+  }, [mediaStream])
 
   function handleCanPlay() {
     videoRef.current.play()

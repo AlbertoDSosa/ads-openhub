@@ -60,8 +60,6 @@ export default function useUserMedia(contraints) {
         })
       }
     }
-    // console.log('user media contraints', contraints)
-    // console.log('user media mediaStream', mediaStream)
   }, [mediaStream, contraints])
 
   return { mediaStream, currentDevices }

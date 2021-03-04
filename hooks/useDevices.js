@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import useLocalStorage from 'hooks/useLocalStorage'
 
 const parseDevice = (item, isAudioOutput) => {
   const { deviceId, groupId, label } = item
@@ -24,27 +23,6 @@ const parseDevice = (item, isAudioOutput) => {
 
 export default function useUserMedia() {
   const [mediaDevices, setMediaDevices] = useState(null)
-  const [
-    selectedVideoInput,
-    setSelectedVideoInput,
-  ] = useLocalStorage('selectedVideoInput', {
-    deviceId: 'default',
-    label: 'Predeterminado',
-  })
-  const [
-    selectedAudioInput,
-    setSelectedAudioInput,
-  ] = useLocalStorage('selectedAudioInput', {
-    deviceId: 'default',
-    label: 'Predeterminado',
-  })
-  const [
-    selectedAudioOutput,
-    setSelectedAudioOutput,
-  ] = useLocalStorage('selectedAudioOutput', {
-    deviceId: 'default',
-    label: 'Predeterminado',
-  })
 
   useEffect(() => {
     async function getDevices() {
@@ -71,7 +49,6 @@ export default function useUserMedia() {
             devices.videoInputs = [...devices.videoInputs, newDevice]
           }
         })
-
         setMediaDevices(devices)
       } catch (err) {
         console.log(err)
@@ -80,18 +57,21 @@ export default function useUserMedia() {
 
     if (!mediaDevices) {
       getDevices()
-    }
-  }, [])
+    } else {
+      const updateDevices = (event) => {
+        getDevices()
+      }
 
-  return {
-    mediaDevices,
-    currentDevices: {
-      videoInput: selectedVideoInput,
-      audioInput: selectedAudioInput,
-      audioOutput: selectedAudioOutput,
-    },
-    setSelectedVideoInput,
-    setSelectedAudioInput,
-    setSelectedAudioOutput,
-  }
+      navigator.mediaDevices.addEventListener('devicechange', updateDevices)
+
+      return () => {
+        navigator.mediaDevices.removeEventListener(
+          'devicechange',
+          updateDevices
+        )
+      }
+    }
+  }, [mediaDevices])
+
+  return { mediaDevices }
 }

@@ -68,10 +68,12 @@ export default function MainNav({ openDrawer, toogleOpenDrawer }) {
         <IconButton color="inherit" onClick={() => setShowSettingsModal(true)}>
           <Settings />
         </IconButton>
-        <SettingsModal
-          showModal={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-        />
+        {showSettingsModal && (
+          <SettingsModal
+            showModal={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+          />
+        )}
       </Box>
       {isSignedIn && (
         <Box>

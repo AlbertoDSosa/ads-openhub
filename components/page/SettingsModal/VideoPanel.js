@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-function VideoPanel({ value, index, mediaSettings }) {
+function VideoPanel({ value, index, mediaSettings, mediaStream }) {
   const classes = useStyles()
   const { changeVideoInput } = useContext(MediaSettingsContext)
   const { videoInput, videoInputs } = mediaSettings
@@ -72,7 +72,7 @@ function VideoPanel({ value, index, mediaSettings }) {
             })}
           </Select>
         </FormControl>
-        <Camera />
+        <Camera mediaStream={mediaStream} />
       </Box>
     </TabPanel>
   )

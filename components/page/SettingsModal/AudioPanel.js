@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, useCallback } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import MediaSettingsContext from 'contexts/MediaSettings'
 
@@ -38,6 +38,21 @@ function AudioPanel({ value, index, mediaSettings }) {
   const [audioOutputTest, setAudioOutputTest] = useState(true)
   const [audioTest, setAudioTest] = useState(null)
 
+  const attachAudioDestination = useCallback(
+    ({ deviceId }) => {
+      if (audioTest) {
+        audioTest.setSinkId(deviceId).catch((error) => {
+          let errorMessage = error
+          if (error.name === 'SecurityError') {
+            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`
+          }
+          console.error(errorMessage)
+        })
+      }
+    },
+    [audioTest]
+  )
+
   useEffect(() => {
     const audio = new Audio('/audio/pink_noise.ogg')
     const audioReady = () => {
@@ -49,6 +64,10 @@ function AudioPanel({ value, index, mediaSettings }) {
     }
   }, [])
 
+  useEffect(() => {
+    attachAudioDestination({ deviceId: audioOutput.deviceId })
+  }, [audioTest])
+
   const handleAudioInputChange = (evt, el) => {
     const { value, label } = el.props
     changeAudioInput({ deviceId: value, label })
@@ -57,6 +76,7 @@ function AudioPanel({ value, index, mediaSettings }) {
   const handleAudioOutputChange = (evt, el) => {
     const { value, label } = el.props
     changeAudioOutput({ deviceId: value, label })
+    attachAudioDestination({ deviceId: value })
   }
 
   const handleAudioTestEnd = () => {
@@ -84,6 +104,8 @@ function AudioPanel({ value, index, mediaSettings }) {
                   {audioInput.label}
                 </Text>
               )}
+              // onOpen={() => setIsSelectOpen(true)}
+              // onClose={() => setIsSelectOpen(false)}
             >
               {audioInputs.map((input, index) => {
                 const { label, deviceId } = input
@@ -119,6 +141,8 @@ function AudioPanel({ value, index, mediaSettings }) {
                   {audioOutput.label}
                 </Text>
               )}
+              // onOpen={() => setIsSelectOpen(true)}
+              // onClose={() => setIsSelectOpen(false)}
             >
               {audioOutputs.map((output, index) => {
                 const { label, deviceId } = output

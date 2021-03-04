@@ -1,4 +1,5 @@
-import { useReducer } from 'react'
+import { useReducer, useEffect } from 'react'
+import useLocalStorage from 'hooks/useLocalStorage'
 
 const actions = {
   SET_ACTIVATE_VIDEO: 'video->toogle_activate',
@@ -61,13 +62,17 @@ const reducer = (state, action) => {
   return actionReducer ? actionReducer(state, action) : state
 }
 
-const initialState = {
-  video: true,
-  audio: true,
-}
-
 const useContraints = () => {
+  const [initialState, setInitialState] = useLocalStorage('contraints', {
+    video: true,
+    audio: true,
+  })
+
   const [state, dispatch] = useReducer(reducer, initialState)
+
+  useEffect(() => {
+    setInitialState(state)
+  }, [state])
 
   return {
     contraints: state,
