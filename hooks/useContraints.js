@@ -9,12 +9,12 @@ const actions = {
 
 const reducers = {
   [actions.SET_ACTIVATE_VIDEO]: (state, action) => {
-    const { active, id } = action.payload
+    const { active, deviceId } = action.payload
 
     if (active) {
       return {
         ...state,
-        video: { deviceId: { exact: id } },
+        video: { deviceId: { exact: deviceId } },
       }
     }
 
@@ -24,12 +24,12 @@ const reducers = {
     }
   },
   [actions.SET_ACTIVATE_AUDIO]: (state, action) => {
-    const { active, id } = action.payload
+    const { active, deviceId } = action.payload
 
     if (active) {
       return {
         ...state,
-        video: { deviceId: { exact: id } },
+        video: { deviceId: { exact: deviceId } },
       }
     }
 
@@ -71,17 +71,23 @@ const useContraints = () => {
 
   return {
     contraints: state,
-    changeVideoSource: ({ id }) => {
-      dispatch({ type: actions.SET_VIDEO_SOURCE, payload: id })
+    changeVideoSource: ({ deviceId }) => {
+      dispatch({ type: actions.SET_VIDEO_SOURCE, payload: deviceId })
     },
-    changeAudioSource: ({ id }) => {
-      dispatch({ type: actions.SET_AUDIO_SOURCE, payload: id })
+    changeAudioSource: ({ deviceId }) => {
+      dispatch({ type: actions.SET_AUDIO_SOURCE, payload: deviceId })
     },
-    toggleVideoActive: ({ active, id }) => {
-      dispatch({ type: actions.SET_ACTIVATE_VIDEO, payload: { active, id } })
+    toggleVideoActive: ({ active, deviceId }) => {
+      dispatch({
+        type: actions.SET_ACTIVATE_VIDEO,
+        payload: { active, deviceId },
+      })
     },
-    toggleAudioActive: ({ active, id }) => {
-      dispatch({ type: actions.SET_ACTIVATE_AUDIO, payload: { active, id } })
+    toggleAudioActive: ({ active, deviceId }) => {
+      dispatch({
+        type: actions.SET_ACTIVATE_AUDIO,
+        payload: { active, deviceId },
+      })
     },
   }
 }

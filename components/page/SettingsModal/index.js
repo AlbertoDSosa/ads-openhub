@@ -1,22 +1,20 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
+import MediaSettingsContext from 'contexts/MediaSettings'
+
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
 import Videocam from '@material-ui/icons/VideocamOutlined'
 import Speaker from '@material-ui/icons/SpeakerOutlined'
-import Headset from '@material-ui/icons/HeadsetOutlined'
 import Close from '@material-ui/icons/Close'
-import { MicNone, MoreHoriz } from '@material-ui/icons'
-import { Modal, Grid, Text, Menu, Input, Box, Button } from 'components/ui'
-import Tabs, { Tab as UiTab, TabPanel } from 'components/ui/Tabs'
-import { FormControl, Select, FormGroup } from 'components/ui/Form'
-import useDevices from 'hooks/useDevices'
-import MediaSettingsContext from 'contexts/MediaSettings'
-import Camera from 'components/page/CameraPlayer'
+
+import { Modal, Grid, Text, Box } from 'components/ui'
+import Tabs, { Tab as UiTab } from 'components/ui/Tabs'
+
+import AudioPanel from './AudioPanel'
+import VideoPanel from './VideoPanel'
 
 const { Content: ModalContent, Title: ModalTitle } = Modal
-const { Item: MenuItem } = Menu
-const { InputLabel } = Input
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,17 +34,6 @@ const useStyles = makeStyles((theme) => ({
         fontSize: '1rem',
       },
     },
-  },
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-  option: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
 }))
 
@@ -89,32 +76,33 @@ const Title = withStyles((theme) => ({
 
 function SettingsModal({ showModal, onClose, label, description }) {
   const classes = useStyles()
-  const { mediaDevices } = useDevices()
-  const [tap, setTap] = useState(0)
+  const { mediaDevices, currentDevices } = useContext(MediaSettingsContext)
 
-  const { changeVideoSource, changeAudioSource } = useContext(
-    MediaSettingsContext
-  )
-  const [audioInput, setAudioInput] = useState('default')
-  const [audioOutput, setAudioOutput] = useState('default')
-  const [videoInput, setVideoInput] = useState('default')
+  const [tap, setTap] = useState(0)
+  const [mediaSettings, setMediaSettings] = useState(null)
 
   const handleTabChange = (evt, newTap) => {
     setTap(newTap)
   }
 
-  const handleVideoSourceChange = (evt, el) => {
-    const { value, device } = el.props
-    const { deviceId: id } = device
-    setVideoInput(value)
-    changeVideoSource({ id })
-  }
-  const handleAudioSourceChange = (evt, el) => {
-    const { value, device } = el.props
-    const { deviceId: id } = device
-    setAudioInput(value)
-    changeAudioSource({ id })
-  }
+  useEffect(() => {
+    if (mediaDevices && currentDevices) {
+      const { audioInputs, audioOutputs, videoInputs } = mediaDevices
+      const { audioInput, audioOutput, videoInput } = currentDevices
+      setMediaSettings({
+        currentAudioDevices: {
+          audioInput,
+          audioOutput,
+        },
+        audioDevices: {
+          audioInputs,
+          audioOutputs,
+        },
+        videoInputs,
+        videoInput,
+      })
+    }
+  }, [mediaDevices, currentDevices])
 
   return (
     <Modal
@@ -154,122 +142,12 @@ function SettingsModal({ showModal, onClose, label, description }) {
             >
               <Close />
             </IconButton>
-            <TabPanel value={tap} index={0}>
-              <Box p={1} display="flex" flexDirection="column" width="100%">
-                <FormGroup row>
-                  <FormControl className={classes.formControl}>
-                    <InputLabel id="label-audio-input" shrink>
-                      Micrófono
-                    </InputLabel>
-                    <Select
-                      onChange={handleAudioSourceChange}
-                      labelId="label-audio-input"
-                      id="select-audio-input"
-                      className={classes.selectEmpty}
-                      value={audioInput}
-                    >
-                      {mediaDevices &&
-                        mediaDevices.audioInputs.map((input) => {
-                          const { label, deviceId } = input
-
-                          return (
-                            <MenuItem
-                              device={input}
-                              value={deviceId}
-                              key={deviceId}
-                            >
-                              <Text className={classes.option} variant="body2">
-                                {label}
-                              </Text>
-                            </MenuItem>
-                          )
-                        })}
-                    </Select>
-                  </FormControl>
-                  <Box display="flex" alignItems="center">
-                    <MicNone /> <MoreHoriz />
-                  </Box>
-                </FormGroup>
-                <FormGroup row>
-                  <FormControl className={classes.formControl}>
-                    <InputLabel id="label-audio-output" shrink>
-                      Altavoces
-                    </InputLabel>
-                    <Select
-                      labelId="label-audio-output"
-                      id="select-audio-input"
-                      value={audioOutput}
-                      onChange={(e, el) => {
-                        setAudioOutput(el.props.value)
-                      }}
-                      className={classes.selectEmpty}
-                    >
-                      {mediaDevices &&
-                        mediaDevices.audioOutputs.map((output) => {
-                          const { label, deviceId } = output
-
-                          return (
-                            <MenuItem
-                              device={output}
-                              value={deviceId}
-                              key={deviceId}
-                            >
-                              <Text className={classes.option} variant="body2">
-                                {label}
-                              </Text>
-                            </MenuItem>
-                          )
-                        })}
-                    </Select>
-                  </FormControl>
-                  <Box display="flex" alignItems="center">
-                    <Button startIcon={<Headset />}>Probar</Button>
-                  </Box>
-                </FormGroup>
-              </Box>
-            </TabPanel>
-            <TabPanel value={tap} index={1}>
-              <Box p={1} display="flex" flexDirection="column">
-                <FormControl className={classes.formControl}>
-                  <InputLabel id="input-label-video-input" shrink>
-                    Cámara
-                  </InputLabel>
-                  <Select
-                    labelId="label-video-input"
-                    id="select-video-input"
-                    onChange={handleVideoSourceChange}
-                    value={videoInput}
-                    className={classes.selectEmpty}
-                  >
-                    <MenuItem
-                      device={{ deviceId: 'default' }}
-                      value="default"
-                      key="default"
-                    >
-                      <Text className={classes.option} variant="body2">
-                        Predeterminado
-                      </Text>
-                    </MenuItem>
-                    {mediaDevices &&
-                      mediaDevices.videoInputs.map((input) => {
-                        const { label, deviceId } = input
-                        return (
-                          <MenuItem
-                            device={input}
-                            value={deviceId}
-                            key={deviceId}
-                          >
-                            <Text className={classes.option} variant="body2">
-                              {label}
-                            </Text>
-                          </MenuItem>
-                        )
-                      })}
-                  </Select>
-                </FormControl>
-                <Camera />
-              </Box>
-            </TabPanel>
+            {mediaSettings && (
+              <AudioPanel value={tap} index={0} mediaSettings={mediaSettings} />
+            )}
+            {mediaSettings && (
+              <VideoPanel value={tap} index={1} mediaSettings={mediaSettings} />
+            )}
           </Grid>
         </Grid>
       </Content>

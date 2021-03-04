@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import useLocalStorage from 'hooks/useLocalStorage'
 
 const parseDevice = (item, isAudioOutput) => {
   const { deviceId, groupId, label } = item
@@ -23,6 +24,27 @@ const parseDevice = (item, isAudioOutput) => {
 
 export default function useUserMedia() {
   const [mediaDevices, setMediaDevices] = useState(null)
+  const [
+    selectedVideoInput,
+    setSelectedVideoInput,
+  ] = useLocalStorage('selectedVideoInput', {
+    deviceId: 'default',
+    label: 'Predeterminado',
+  })
+  const [
+    selectedAudioInput,
+    setSelectedAudioInput,
+  ] = useLocalStorage('selectedAudioInput', {
+    deviceId: 'default',
+    label: 'Predeterminado',
+  })
+  const [
+    selectedAudioOutput,
+    setSelectedAudioOutput,
+  ] = useLocalStorage('selectedAudioOutput', {
+    deviceId: 'default',
+    label: 'Predeterminado',
+  })
 
   useEffect(() => {
     async function getDevices() {
@@ -61,5 +83,15 @@ export default function useUserMedia() {
     }
   }, [])
 
-  return { mediaDevices }
+  return {
+    mediaDevices,
+    currentDevices: {
+      videoInput: selectedVideoInput,
+      audioInput: selectedAudioInput,
+      audioOutput: selectedAudioOutput,
+    },
+    setSelectedVideoInput,
+    setSelectedAudioInput,
+    setSelectedAudioOutput,
+  }
 }
