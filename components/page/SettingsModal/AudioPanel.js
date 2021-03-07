@@ -1,13 +1,14 @@
 import { useState, useContext, useEffect, useCallback } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import MediaSettingsContext from 'contexts/MediaSettings'
+import useAudio from 'hooks/useAudio'
 
 import { Text, Menu, Box, Button, Input } from 'components/ui'
 import { FormControl, Select, FormGroup } from 'components/ui/Form'
 import { TabPanel } from 'components/ui/Tabs'
 
 import Headset from '@material-ui/icons/HeadsetOutlined'
-import { MicNone, MoreHoriz } from '@material-ui/icons'
+import { MicNone } from '@material-ui/icons'
 
 const { Item: MenuItem } = Menu
 const { InputLabel } = Input
@@ -26,8 +27,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-function AudioPanel({ value, index, mediaSettings }) {
+function AudioPanel({ value, index, mediaSettings, mediaStream }) {
   const classes = useStyles()
+  const { running, setRunning, features } = useAudio({ mediaStream })
   const { currentAudioDevices, audioDevices } = mediaSettings
   const { audioInput, audioOutput } = currentAudioDevices
   const { audioInputs, audioOutputs } = audioDevices
@@ -37,6 +39,7 @@ function AudioPanel({ value, index, mediaSettings }) {
   )
   const [audioOutputTest, setAudioOutputTest] = useState(true)
   const [audioTest, setAudioTest] = useState(null)
+  const [micValue, setMicValue] = useState(0)
 
   const attachAudioDestination = useCallback(
     ({ deviceId }) => {
@@ -59,6 +62,8 @@ function AudioPanel({ value, index, mediaSettings }) {
       setAudioTest(audio)
     }
     audio.addEventListener('canplaythrough', audioReady)
+
+    setRunning(true)
     return () => {
       audio.removeEventListener('canplaythrough', audioReady)
     }
@@ -67,6 +72,12 @@ function AudioPanel({ value, index, mediaSettings }) {
   useEffect(() => {
     attachAudioDestination({ deviceId: audioOutput.deviceId })
   }, [audioTest])
+
+  useEffect(() => {
+    if (running) {
+      setMicValue(features.rms)
+    }
+  }, [features])
 
   const handleAudioInputChange = (evt, el) => {
     const { value, label } = el.props
@@ -104,8 +115,6 @@ function AudioPanel({ value, index, mediaSettings }) {
                   {audioInput.label}
                 </Text>
               )}
-              // onOpen={() => setIsSelectOpen(true)}
-              // onClose={() => setIsSelectOpen(false)}
             >
               {audioInputs.map((input, index) => {
                 const { label, deviceId } = input
@@ -121,7 +130,15 @@ function AudioPanel({ value, index, mediaSettings }) {
             </Select>
           </FormControl>
           <Box display="flex" alignItems="center">
-            <MicNone /> <MoreHoriz />
+            <MicNone />
+            <Box
+              marginLeft=".5rem"
+              width="4rem"
+              height=".5rem"
+              border="1px solid"
+            >
+              <Box width={micValue} height="100%" bgcolor="green" />
+            </Box>
           </Box>
         </FormGroup>
         <FormGroup row>
@@ -141,8 +158,6 @@ function AudioPanel({ value, index, mediaSettings }) {
                   {audioOutput.label}
                 </Text>
               )}
-              // onOpen={() => setIsSelectOpen(true)}
-              // onClose={() => setIsSelectOpen(false)}
             >
               {audioOutputs.map((output, index) => {
                 const { label, deviceId } = output
