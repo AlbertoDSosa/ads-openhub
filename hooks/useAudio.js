@@ -43,7 +43,7 @@ const useAudio = ({ mediaStream }) => {
     }
   }, [running, analyser])
 
-  return { running, setRunning, features }
+  return [running, setRunning, features]
 }
 
 export default useAudio

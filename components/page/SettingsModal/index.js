@@ -2,11 +2,8 @@ import { useState, useContext, useEffect } from 'react'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 import MediaSettingsContext from 'contexts/MediaSettings'
 import useDevices from 'hooks/useDevices'
-import useUserMedia from 'hooks/useUserMedia'
 
 import Divider from '@material-ui/core/Divider'
-import Backdrop from '@material-ui/core/Backdrop'
-import CircularProgress from '@material-ui/core/CircularProgress'
 
 import IconButton from '@material-ui/core/IconButton'
 import Videocam from '@material-ui/icons/VideocamOutlined'
@@ -86,8 +83,9 @@ const Title = withStyles((theme) => ({
 function SettingsModal({ showModal, onClose, label, description }) {
   const classes = useStyles()
   const { mediaDevices } = useDevices()
-  const { currentDevices, contraints } = useContext(MediaSettingsContext)
-  const { mediaStream } = useUserMedia(contraints)
+  const { currentDevices, audioConstraints, videoConstraints } = useContext(
+    MediaSettingsContext
+  )
 
   const [tap, setTap] = useState(0)
   const [mediaSettings, setMediaSettings] = useState(null)
@@ -109,19 +107,13 @@ function SettingsModal({ showModal, onClose, label, description }) {
           audioInputs,
           audioOutputs,
         },
+        audioConstraints,
+        videoConstraints,
         videoInputs,
         videoInput,
       })
     }
   }, [mediaDevices, currentDevices])
-
-  if (!mediaDevices && !mediaStream) {
-    return (
-      <Backdrop className={classes.backdrop} open={showModal}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    )
-  }
 
   return (
     <Modal
@@ -162,20 +154,10 @@ function SettingsModal({ showModal, onClose, label, description }) {
               <Close />
             </IconButton>
             {mediaSettings && (
-              <AudioPanel
-                value={tap}
-                index={0}
-                mediaStream={mediaStream}
-                mediaSettings={mediaSettings}
-              />
+              <AudioPanel value={tap} index={0} mediaSettings={mediaSettings} />
             )}
             {mediaSettings && (
-              <VideoPanel
-                value={tap}
-                index={1}
-                mediaStream={mediaStream}
-                mediaSettings={mediaSettings}
-              />
+              <VideoPanel value={tap} index={1} mediaSettings={mediaSettings} />
             )}
           </Grid>
         </Grid>

@@ -15,6 +15,8 @@ function CameraPlayer({ mediaStream }) {
 
   return (
     <video
+      width={320}
+      height={240}
       ref={videoRef}
       onCanPlay={handleCanPlay}
       autoPlay

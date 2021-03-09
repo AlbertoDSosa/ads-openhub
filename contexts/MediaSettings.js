@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import useContraints from 'hooks/useContraints'
+import useConstraints from 'hooks/useConstraints'
 import useLocalStorage from 'hooks/useLocalStorage'
 
 const MediaSettingsContext = createContext({})
@@ -27,7 +27,14 @@ export const MediaSettingsProvider = ({ children }) => {
     }
   )
 
-  const { contraints, changeVideoSource, changeAudioSource } = useContraints()
+  const {
+    audioConstraints,
+    videoConstraints,
+    changeVideoSource,
+    changeAudioSource,
+    changeAudioActive,
+    changeVideoActive,
+  } = useConstraints()
 
   const changeAudioOutput = ({ deviceId, label, groupId }) => {
     setSelectedAudioOutput({ deviceId, label, groupId })
@@ -43,10 +50,21 @@ export const MediaSettingsProvider = ({ children }) => {
     setSelectedVideoInput({ deviceId, label, groupId })
   }
 
+  const toggleAudioActive = ({ active, deviceId }) => {
+    changeAudioActive({ active, deviceId })
+    setSelectedAudioInput({ ...selectedVideoInput, deviceId })
+  }
+
+  const toggleVideoActive = ({ active, deviceId }) => {
+    changeVideoActive({ active, deviceId })
+    setSelectedVideoInput({ ...selectedVideoInput, deviceId })
+  }
+
   return (
     <MediaSettingsContext.Provider
       value={{
-        contraints,
+        audioConstraints,
+        videoConstraints,
         currentDevices: {
           videoInput: selectedVideoInput,
           audioInput: selectedAudioInput,
@@ -55,6 +73,8 @@ export const MediaSettingsProvider = ({ children }) => {
         changeVideoInput,
         changeAudioInput,
         changeAudioOutput,
+        toggleAudioActive,
+        toggleVideoActive,
       }}
     >
       {children}

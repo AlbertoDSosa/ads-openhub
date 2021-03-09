@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import Head from 'next/head'
+
+import useUserMedia from 'hooks/useUserMedia'
+import MediaSettingsContext from 'contexts/MediaSettings'
 
 import { makeStyles } from '@material-ui/core/styles'
 import { Grid, Text, Box, Button, Menu } from 'components/ui'
+import MicTest from 'components/page/MicTest'
 
 import Mic from '@material-ui/icons/Mic'
 import MicOff from '@material-ui/icons/MicOff'
@@ -16,7 +20,7 @@ import HelpOutlineOutlined from '@material-ui/icons/HelpOutlineOutlined'
 
 import IconButton from '@material-ui/core/IconButton'
 import Tooltip from '@material-ui/core/Tooltip'
-// import CameraPlayer from 'components/page/CameraPlayer'
+import CameraPlayer from 'components/page/CameraPlayer'
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -42,12 +46,25 @@ const useStyles = makeStyles((theme) => ({
 const { Item } = Menu
 
 const Hall = ({ meeting }) => {
-  const classes = useStyles()
   // const { id } = JSON.parse(meeting)
+  const classes = useStyles()
+  const {
+    videoConstraints,
+    audioConstraints,
+    currentDevices,
+    toggleAudioActive,
+    toggleVideoActive,
+  } = useContext(MediaSettingsContext)
+
+  const [videoStream] = useUserMedia(videoConstraints)
+  const [audioStream] = useUserMedia(audioConstraints)
+  // const { currentTracks, tracks } = useTracks({ videoStream })
+
+  const { videoInput, audioInput } = currentDevices
 
   const [anchorEl, setAnchorEl] = useState(null)
   const [isCameraActive, setIsCameraActive] = useState(true)
-  const [isAudioActive, setIsAudioActive] = useState(true)
+  const [isMicActive, setIsMicActive] = useState(true)
 
   const handleOpenOptionsMenu = (event) => {
     setAnchorEl(event.currentTarget)
@@ -58,12 +75,22 @@ const Hall = ({ meeting }) => {
   }
 
   const toggleCameraActive = () => {
+    toggleVideoActive({
+      active: !isCameraActive,
+      deviceId: videoInput.deviceId,
+    })
     setIsCameraActive(!isCameraActive)
   }
 
-  const toggleAudioActive = () => {
-    setIsAudioActive(!isAudioActive)
+  const toggleMicActive = () => {
+    toggleAudioActive({ active: !isMicActive, deviceId: audioInput.deviceId })
+    setIsMicActive(!isMicActive)
   }
+
+  useEffect(() => {
+    setIsMicActive(!!audioConstraints)
+    setIsCameraActive(!!videoConstraints)
+  }, [])
 
   return (
     <>
@@ -84,6 +111,14 @@ const Hall = ({ meeting }) => {
             fontSize={{ xs: '.55rem', sm: '.7rem', md: '.9rem', lg: '1rem' }}
             m={2}
           >
+            <Box
+              bgcolor="black"
+              width={320}
+              height={240}
+              borderRadius="borderRadius"
+            >
+              <CameraPlayer mediaStream={videoStream} />
+            </Box>
             <Box p={0.5} className={classes.cameraOptions}>
               <Tooltip title="Más opciones">
                 <IconButton
@@ -130,14 +165,6 @@ const Hall = ({ meeting }) => {
               </Menu>
             </Box>
             <Box
-              bgcolor="black"
-              width="32em"
-              height="18em"
-              borderRadius="borderRadius"
-            >
-              {/* <CameraPlayer /> */}
-            </Box>
-            <Box
               position="absolute"
               bottom={5}
               width="100%"
@@ -145,10 +172,10 @@ const Hall = ({ meeting }) => {
               justifyContent="center"
             >
               <IconButton
-                onClick={toggleAudioActive}
+                onClick={toggleMicActive}
                 className={classes.videoActions}
                 style={
-                  isAudioActive
+                  isMicActive
                     ? {}
                     : {
                         backgroundColor: 'red',
@@ -156,7 +183,7 @@ const Hall = ({ meeting }) => {
                       }
                 }
               >
-                {isAudioActive ? <Mic /> : <MicOff />}
+                {isMicActive ? <Mic /> : <MicOff />}
               </IconButton>
               <IconButton
                 onClick={toggleCameraActive}
@@ -172,6 +199,9 @@ const Hall = ({ meeting }) => {
               >
                 {isCameraActive ? <Videocam /> : <VideocamOff />}
               </IconButton>
+            </Box>
+            <Box position="absolute" top={6}>
+              <MicTest mediaStream={audioStream} borderColor="white" />
             </Box>
           </Box>
         </Grid>
