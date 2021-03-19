@@ -1,4 +1,4 @@
-This is a fork to [mediasoup-demo]('https://github.com/versatica/mediasoup-demo')
+This is a fork to [mediasoup-demo](https://github.com/versatica/mediasoup-demo)
 
 ## Getting Started
 
