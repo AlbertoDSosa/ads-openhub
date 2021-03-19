@@ -1,8 +1,6 @@
 import bowser from 'bowser'
 
-window.BOWSER = bowser
-
-export default function () {
+const deviceInfo = () => {
   const ua = navigator.userAgent
   const browser = bowser.getParser(ua)
   let flag
@@ -20,3 +18,5 @@ export default function () {
     version: browser.getBrowserVersion(),
   }
 }
+
+export default deviceInfo
