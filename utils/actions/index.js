@@ -4,6 +4,7 @@ export const roomActions = {
   SET_ROOM_ACTIVE_SPEAKER: 'room->setActiveSpeaker',
   SET_ROOM_STATS_PEER_ID: 'room->setStatsPeerId',
   SET_FACE_DETECTION: 'room->setFaceDetection',
+  REMOVE_PEER_TO_ROOM: 'room->removePeer',
 }
 
 export const meActions = {
@@ -34,6 +35,10 @@ export const peerActions = {
   ADD_PEER: 'peer->add',
   REMOVE_PEER: 'peer->remove',
   SET_PEER_DISPLAY_NAME: 'peer->setDisplayName',
+  ADD_CONSUMER_TO_PEER: 'peer->addConsumer',
+  REMOVE_CONSUMER_TO_PEER: 'peer->removeConsumer',
+  ADD_DATA_CONSUMER_TO_PEER: 'peer->addDataConsumer',
+  REMOVE_DATA_CONSUMER_TO_PEER: 'peer->removeDataConsumer',
 }
 
 export const consumerActions = {

@@ -41,17 +41,17 @@ const RoomPage = ({ meeting }) => {
 
   useEffect(() => {
     if (roomClient) {
-      console.log(roomClient)
+      roomClient.join()
     }
   }, [roomClient])
 
   useEffect(() => {
     if (user) {
-      console.log(user)
       setRoomClientConstructor({
         roomId: id,
         displayName: user.displayName,
-        handlerName: user.displayName,
+        produce: true,
+        consume: true,
       })
     }
   }, [user])
@@ -89,7 +89,7 @@ export async function getServerSideProps({ params, req }) {
   const { host } = req.headers
 
   try {
-    const res = await fetch(`http://${host}/api/meetings/${id}`)
+    const res = await fetch(`https://${host}/api/meetings/${id}`)
     const meeting = await res.json()
 
     return {

@@ -1,9 +1,17 @@
 import protooClient from 'protoo-client'
 import * as mediasoupClient from 'mediasoup-client'
-import * as cookiesManager from '../utils/cookiesManager'
-import Logger from '../utils/Logger'
-import notifyHandler from '../utils/notifyHandler'
-import { getProtooUrl } from '../utils/urlFactory'
+import * as cookiesManager from 'utils/cookiesManager'
+import Logger from 'utils/Logger'
+import notifyHandler from 'utils/notifyHandler'
+import { getProtooUrl } from 'utils/urlFactory'
+import {
+  roomActions,
+  meActions,
+  producerActions,
+  peerActions,
+  consumerActions,
+  notifyActions,
+} from 'utils/actions'
 
 const VIDEO_CONSTRAINS = {
   qvga: { width: { ideal: 320 }, height: { ideal: 240 } },
@@ -40,24 +48,26 @@ const logger = new Logger('RoomClient')
 
 export default class RoomClient {
   constructor({
+    state,
     roomId,
     peerId,
     device,
     hostname,
+    dispatch,
+
+    // Config
+    svc,
+    produce,
+    consume,
+    forceTcp,
+    forceVP9,
+    forceH264,
+    datachannel,
     displayName,
     handlerName,
     useSimulcast,
-    useSharingSimulcast,
-    forceTcp,
-    produce,
-    consume,
-    forceH264,
-    forceVP9,
-    svc,
-    datachannel,
     externalVideo,
-    state,
-    dispatch,
+    useSharingSimulcast,
   }) {
     logger.debug(
       'constructor() [roomId:"%s", peerId:"%s", displayName:"%s", device:%s]',
@@ -237,7 +247,10 @@ export default class RoomClient {
 
     if (this._recvTransport) this._recvTransport.close()
 
-    this._dispatch({ type: 'SET_ROOM_STATE', payload: { state: 'closed' } })
+    this._dispatch({
+      type: roomActions.SET_ROOM_STATE,
+      payload: { state: 'closed' },
+    })
   }
 
   async join() {
@@ -245,7 +258,10 @@ export default class RoomClient {
 
     this._protoo = new protooClient.Peer(protooTransport)
 
-    this._dispatch({ type: 'SET_ROOM_STATE', payload: { state: 'connecting' } })
+    this._dispatch({
+      type: roomActions.SET_ROOM_STATE,
+      payload: { state: 'connecting' },
+    })
 
     this._protoo.on('open', () => this._joinRoom())
 
@@ -278,7 +294,10 @@ export default class RoomClient {
         this._recvTransport = null
       }
 
-      this._dispatch({ type: 'SET_ROOM_STATE', payload: { state: 'closed' } })
+      this._dispatch({
+        type: roomActions.SET_ROOM_STATE,
+        payload: { state: 'closed' },
+      })
     })
 
     this._protoo.on('close', () => {
@@ -350,11 +369,11 @@ export default class RoomClient {
             }
 
             this._dispatch({
-              type: 'ADD_CONSUMER',
+              type: consumerActions.ADD_CONSUMER,
               payload: { consumer: newConsumer },
             })
             this._dispatch({
-              type: 'ADD_CONSUMER_TO_PEER',
+              type: peerActions.ADD_CONSUMER_TO_PEER,
               payload: { consumer: newConsumer, peerId },
             })
 
@@ -545,12 +564,12 @@ export default class RoomClient {
             }
 
             this._dispatch({
-              type: 'ADD_DATA_CONSUMER',
+              type: consumerActions.ADD_DATA_CONSUMER,
               payload: { dataConsumer: newDataConsumer },
             })
 
             this._dispatch({
-              type: 'ADD_DATA_CONSUMER_TO_PEER',
+              type: peerActions.ADD_DATA_CONSUMER_TO_PEER,
               payload: { dataConsumer: newDataConsumer, peerId },
             })
 
@@ -587,7 +606,7 @@ export default class RoomClient {
           const { producerId, score } = notification.data
 
           this._dispatch({
-            type: 'SET_PRODUCER_SCORE',
+            type: producerActions.SET_PRODUCER_SCORE,
             payload: { producerId, score },
           })
 
@@ -598,7 +617,7 @@ export default class RoomClient {
           const peer = notification.data
 
           this._dispatch({
-            type: 'ADD_PEER',
+            type: peerActions.ADD_PEER,
             payload: { ...peer, consumers: [], dataConsumers: [] },
           })
 
@@ -617,12 +636,12 @@ export default class RoomClient {
           const { peerId } = notification.data
 
           this._dispatch({
-            type: 'REMOVE_PEER',
+            type: peerActions.REMOVE_PEER,
             payload: { peerId },
           })
 
           this._dispatch({
-            type: 'REMOVE_PEER_TO_ROOM',
+            type: roomActions.REMOVE_PEER_TO_ROOM,
             payload: { peerId },
           })
 
@@ -633,7 +652,7 @@ export default class RoomClient {
           const { peerId, displayName, oldDisplayName } = notification.data
 
           this._dispatch({
-            type: 'SET_PEER_DISPLAY_NAME',
+            type: peerActions.SET_PEER_DISPLAY_NAME,
             payload: { displayName, peerId },
           })
 
@@ -666,12 +685,12 @@ export default class RoomClient {
           const { peerId } = consumer.appData
 
           this._dispatch({
-            type: 'REMOVE_CONSUMER',
+            type: consumerActions.REMOVE_CONSUMER,
             payload: { consumerId },
           })
 
           this._dispatch({
-            type: 'REMOVE_CONSUMER_TO_PEER',
+            type: peerActions.REMOVE_CONSUMER_TO_PEER,
             payload: { consumerId, peerId },
           })
 
@@ -687,7 +706,7 @@ export default class RoomClient {
           consumer.pause()
 
           this._dispatch({
-            type: 'SET_CONSUMER_PAUSED',
+            type: consumerActions.SET_CONSUMER_PAUSED,
             payload: { consumerId, originator: 'remote' },
           })
 
@@ -703,7 +722,7 @@ export default class RoomClient {
           consumer.resume()
 
           this._dispatch({
-            type: 'SET_CONSUMER_RESUMED',
+            type: consumerActions.SET_CONSUMER_RESUMED,
             payload: { consumerId, originator: 'remote' },
           })
 
@@ -717,7 +736,7 @@ export default class RoomClient {
           if (!consumer) break
 
           this._dispatch({
-            type: 'SET_CONSUMER_CURRENT_LAYERS',
+            type: consumerActions.SET_CONSUMER_CURRENT_LAYERS,
             payload: {
               consumerId,
               spatialLayer,
@@ -732,7 +751,7 @@ export default class RoomClient {
           const { consumerId, score } = notification.data
 
           this._dispatch({
-            type: 'SET_CONSUMER_SCORE',
+            type: consumerActions.SET_CONSUMER_SCORE,
             payload: { consumerId, score },
           })
 
@@ -752,12 +771,12 @@ export default class RoomClient {
           const { peerId } = dataConsumer.appData
 
           this._dispatch({
-            type: 'REMOVE_DATA_CONSUMER',
+            type: consumerActions.REMOVE_DATA_CONSUMER,
             payload: { dataConsumerId },
           })
 
           this._dispatch({
-            type: 'REMOVE_DATA_CONSUMER_TO_PEER',
+            type: peerActions.REMOVE_DATA_CONSUMER_TO_PEER,
             payload: { dataConsumerId, peerId },
           })
 
@@ -768,7 +787,7 @@ export default class RoomClient {
           const { peerId } = notification.data
 
           this._dispatch({
-            type: 'SET_ROOM_ACTIVE_SPEAKER',
+            type: roomActions.SET_ROOM_ACTIVE_SPEAKER,
             payload: { peerId },
           })
 
@@ -833,7 +852,7 @@ export default class RoomClient {
       }
 
       this._dispatch({
-        type: 'ADD_PRODUCER',
+        type: producerActions.ADD_PRODUCER,
         payload: { producer: newMicProducer },
       })
 
@@ -875,7 +894,7 @@ export default class RoomClient {
     this._micProducer.close()
 
     this._dispatch({
-      type: 'REMOVE_PRODUCER',
+      type: producerActions.REMOVE_PRODUCER,
       payload: { producerId: this._micProducer.id },
     })
 
@@ -907,7 +926,7 @@ export default class RoomClient {
       })
 
       this._dispatch({
-        type: 'SET_PRODUCER_PAUSED',
+        type: producerActions.SET_PRODUCER_PAUSED,
         payload: { producerId: this._micProducer.id },
       })
     } catch (error) {
@@ -934,7 +953,7 @@ export default class RoomClient {
       })
 
       this._dispatch({
-        type: 'SET_PRODUCER_RESUMED',
+        type: producerActions.SET_PRODUCER_RESUMED,
         payload: { producerId: this._micProducer.id },
       })
     } catch (error) {
@@ -966,7 +985,7 @@ export default class RoomClient {
     let device
 
     this._dispatch({
-      type: 'SET_WEBCAM_IN_PROGRESS',
+      type: meActions.SET_WEBCAM_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1058,7 +1077,7 @@ export default class RoomClient {
       }
 
       this._dispatch({
-        type: 'ADD_PRODUCER',
+        type: producerActions.ADD_PRODUCER,
         payload: { producer: newWebcamProducer },
       })
 
@@ -1092,7 +1111,7 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_WEBCAM_IN_PROGRESS',
+      type: meActions.SET_WEBCAM_IN_PROGRESS,
       payload: { flag: false },
     })
   }
@@ -1105,7 +1124,7 @@ export default class RoomClient {
     this._webcamProducer.close()
 
     this._dispatch({
-      type: 'REMOVE_PRODUCER',
+      type: producerActions.REMOVE_PRODUCER,
       payload: { producerId: this._webcamProducer.id },
     })
     try {
@@ -1129,7 +1148,7 @@ export default class RoomClient {
     logger.debug('changeWebcam()')
 
     this._dispatch({
-      type: 'SET_WEBCAM_IN_PROGRESS',
+      type: meActions.SET_WEBCAM_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1176,7 +1195,7 @@ export default class RoomClient {
       await this._webcamProducer.replaceTrack({ track })
 
       this._dispatch({
-        type: 'SET_PRODUCER_TRACK',
+        type: producerActions.SET_PRODUCER_TRACK,
         payload: { producerId: this._webcamProducer.id, track },
       })
     } catch (error) {
@@ -1192,7 +1211,7 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_WEBCAM_IN_PROGRESS',
+      type: meActions.SET_WEBCAM_IN_PROGRESS,
       payload: { flag: true },
     })
   }
@@ -1201,7 +1220,7 @@ export default class RoomClient {
     logger.debug('changeWebcamResolution()')
 
     this._dispatch({
-      type: 'SET_WEBCAM_IN_PROGRESS',
+      type: meActions.SET_WEBCAM_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1234,7 +1253,7 @@ export default class RoomClient {
       await this._webcamProducer.replaceTrack({ track })
 
       this._dispatch({
-        type: 'SET_PRODUCER_TRACK',
+        type: producerActions.SET_PRODUCER_TRACK,
         payload: {
           producerId: this._webcamProducer.id,
           track,
@@ -1253,7 +1272,7 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_WEBCAM_IN_PROGRESS',
+      type: meActions.SET_WEBCAM_IN_PROGRESS,
       payload: { flag: false },
     })
   }
@@ -1273,7 +1292,7 @@ export default class RoomClient {
     let track
 
     this._dispatch({
-      type: 'SET_SHARE_IN_PROGRESS',
+      type: meActions.SET_SHARE_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1295,7 +1314,7 @@ export default class RoomClient {
       // May mean cancelled (in some implementations).
       if (!stream) {
         this._dispatch({
-          type: 'SET_SHARE_IN_PROGRESS',
+          type: meActions.SET_SHARE_IN_PROGRESS,
           payload: { flag: false },
         })
 
@@ -1369,7 +1388,7 @@ export default class RoomClient {
       }
 
       this._dispatch({
-        type: 'ADD_PRODUCER',
+        type: producerActions.ADD_PRODUCER,
         payload: { producer: newShareProducer },
       })
 
@@ -1405,7 +1424,7 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_SHARE_IN_PROGRESS',
+      type: meActions.SET_SHARE_IN_PROGRESS,
       payload: { flag: false },
     })
   }
@@ -1418,6 +1437,7 @@ export default class RoomClient {
     this._shareProducer.close()
 
     this._dispatch({
+      type: producerActions.REMOVE_PRODUCER,
       payload: { producerId: this._shareProducer.id },
     })
 
@@ -1442,7 +1462,7 @@ export default class RoomClient {
     logger.debug('enableAudioOnly()')
 
     this._dispatch({
-      type: 'SET_AUDIO_ONLY_IN_PROGRESS',
+      type: meActions.SET_AUDIO_ONLY_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1455,12 +1475,12 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_AUDIO_ONLY_STATE',
+      type: meActions.SET_AUDIO_ONLY_STATE,
       payload: { enabled: true },
     })
 
     this._dispatch({
-      type: 'SET_AUDIO_ONLY_IN_PROGRESS',
+      type: meActions.SET_AUDIO_ONLY_IN_PROGRESS,
       payload: { flag: false },
     })
   }
@@ -1469,7 +1489,7 @@ export default class RoomClient {
     logger.debug('disableAudioOnly()')
 
     this._dispatch({
-      type: 'SET_AUDIO_ONLY_IN_PROGRESS',
+      type: meActions.SET_AUDIO_ONLY_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1488,12 +1508,12 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_AUDIO_ONLY_STATE',
+      type: meActions.SET_AUDIO_ONLY_STATE,
       payload: { enabled: false },
     })
 
     this._dispatch({
-      type: 'SET_AUDIO_ONLY_IN_PROGRESS',
+      type: meActions.SET_AUDIO_ONLY_IN_PROGRESS,
       payload: { flag: false },
     })
   }
@@ -1502,7 +1522,7 @@ export default class RoomClient {
     logger.debug('muteAudio()')
 
     this._dispatch({
-      type: 'SET_AUDIO_MUTED_STATE',
+      type: meActions.SET_AUDIO_MUTED_STATE,
       payload: { enabled: true },
     })
   }
@@ -1511,7 +1531,7 @@ export default class RoomClient {
     logger.debug('unmuteAudio()')
 
     this._dispatch({
-      type: 'SET_AUDIO_MUTED_STATE',
+      type: meActions.SET_AUDIO_MUTED_STATE,
       payload: { enabled: false },
     })
   }
@@ -1520,7 +1540,7 @@ export default class RoomClient {
     logger.debug('restartIce()')
 
     this._dispatch({
-      type: 'SET_RESTART_ICE_IN_PROGRESS',
+      type: meActions.SET_RESTART_ICE_IN_PROGRESS,
       payload: { flag: true },
     })
 
@@ -1561,7 +1581,7 @@ export default class RoomClient {
     }
 
     this._dispatch({
-      type: 'SET_RESTART_ICE_IN_PROGRESS',
+      type: meActions.SET_RESTART_ICE_IN_PROGRESS,
       payload: { flag: false },
     })
   }
@@ -1603,7 +1623,7 @@ export default class RoomClient {
       })
 
       this._dispatch({
-        type: 'SET_CONSUMER_PREFERRED_LAYERS',
+        type: consumerActions.SET_CONSUMER_PREFERRED_LAYERS,
         payload: {
           consumerId,
           spatialLayer,
@@ -1637,7 +1657,7 @@ export default class RoomClient {
       })
 
       this._dispatch({
-        type: 'SET_CONSUMER_PRIORITY',
+        type: consumerActions.SET_CONSUMER_PRIORITY,
         payload: { consumerId, priority },
       })
     } catch (error) {
@@ -1706,7 +1726,7 @@ export default class RoomClient {
       }
 
       this._dispatch({
-        type: 'ADD_DATA_PRODUCER',
+        type: producerActions.ADD_DATA_PRODUCER,
         payload: { dataProducer: newChatDataProducer },
       })
 
@@ -1789,7 +1809,7 @@ export default class RoomClient {
       }
 
       this._dispatch({
-        type: 'ADD_DATA_PRODUCER',
+        type: producerActions.ADD_DATA_PRODUCER,
         payload: { dataProducer: newBotDataProducer },
       })
 
@@ -1917,7 +1937,7 @@ export default class RoomClient {
       this._displayName = displayName
 
       this._dispatch({
-        type: 'SET_DISPLAY_NAME',
+        type: meActions.SET_DISPLAY_NAME,
         payload: {
           displayName,
         },
@@ -1945,7 +1965,7 @@ export default class RoomClient {
       // displayName again.
 
       this._dispatch({
-        type: 'SET_DISPLAY_NAME',
+        type: meActions.SET_DISPLAY_NAME,
         payload: {},
       })
     }
@@ -2127,7 +2147,6 @@ export default class RoomClient {
 
   async _joinRoom() {
     logger.debug('_joinRoom()')
-
     try {
       this._mediasoupDevice = new mediasoupClient.Device({
         handlerName: this._handlerName,
@@ -2319,13 +2338,13 @@ export default class RoomClient {
       })
 
       this._dispatch({
-        type: 'SET_ROOM_STATE',
+        type: roomActions.SET_ROOM_STATE,
         payload: { state: 'connected' },
       })
 
       // Clean all the existing notifcations.
       this._dispatch({
-        type: 'REMOVE_ALL_NOTIFICATIONS',
+        type: notifyActions.REMOVE_ALL_NOTIFICATIONS,
       })
 
       notifyHandler(
@@ -2339,7 +2358,7 @@ export default class RoomClient {
 
       for (const peer of peers) {
         this._dispatch({
-          type: 'ADD_PEER',
+          type: peerActions.ADD_PEER,
           payload: { ...peer, consumers: [], dataConsumers: [] },
         })
       }
@@ -2349,7 +2368,7 @@ export default class RoomClient {
         // Set our media capabilities.
 
         this._dispatch({
-          type: 'SET_MEDIA_CAPABILITIES',
+          type: meActions.SET_MEDIA_CAPABILITIES,
           payload: {
             canSendMic: this._mediasoupDevice.canProduce('audio'),
             canSendWebcam: this._mediasoupDevice.canProduce('video'),
@@ -2380,7 +2399,7 @@ export default class RoomClient {
         const { me } = this.getRoomState()
 
         this._dispatch({
-          type: 'SET_ROOM_STATS_PEER_ID',
+          type: roomActions.SET_ROOM_STATS_PEER_ID,
           payload: { peerId: me.id },
         })
       }
@@ -2427,7 +2446,7 @@ export default class RoomClient {
     else if (!this._webcams.has(currentWebcamId)) this._webcam.device = array[0]
 
     this._dispatch({
-      type: 'SET_CAN_CHANGE_WEBCAM',
+      type: meActions.SET_CAN_CHANGE_WEBCAM,
       payload: { flag: this._webcams.size > 1 },
     })
   }
@@ -2453,7 +2472,7 @@ export default class RoomClient {
       consumer.pause()
 
       this._dispatch({
-        type: 'SET_CONSUMER_PAUSED',
+        type: consumerActions.SET_CONSUMER_PAUSED,
         payload: {
           consumerId: consumer.id,
           originator: 'local',
@@ -2481,7 +2500,7 @@ export default class RoomClient {
       consumer.resume()
 
       this._dispatch({
-        type: 'SET_CONSUMER_RESUMED',
+        type: consumerActions.SET_CONSUMER_RESUMED,
         payload: {
           consumerId: consumer.id,
           originator: 'local',

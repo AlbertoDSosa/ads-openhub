@@ -39,9 +39,7 @@ export const roomReducers = (actions) => {
         }
       }
 
-      if (roomState === 'connected') {
-        return { ...state, room: { ...room, state: roomState } }
-      }
+      return { ...state, room: { ...room, state: roomState } }
     },
     [actions.SET_ROOM_ACTIVE_SPEAKER]: (state, action) => {
       const { peerId } = action.payload

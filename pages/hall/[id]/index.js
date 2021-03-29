@@ -239,7 +239,7 @@ export async function getServerSideProps({ params, req }) {
   const { host } = req.headers
 
   try {
-    const res = await fetch(`http://${host}/api/meetings/${id}`)
+    const res = await fetch(`https://${host}/api/meetings/${id}`)
     const meeting = await res.json()
 
     return {

@@ -1,6 +1,7 @@
 import randomString from 'random-string'
+import { notifyActions } from 'utils/actions'
 
-export default ({ type, text, title, timeout }, dispatch) => {
+const notifyHandler = ({ type, text, title, timeout }, dispatch) => {
   if (!timeout) {
     switch (type) {
       case 'info':
@@ -21,14 +22,16 @@ export default ({ type, text, title, timeout }, dispatch) => {
   }
 
   dispatch({
-    type: 'ADD_NOTIFICATION',
+    type: notifyActions.ADD_NOTIFICATION,
     payload: { notification },
   })
 
   setTimeout(() => {
     dispatch({
-      type: 'REMOVE_NOTIFICATION',
+      type: notifyActions.REMOVE_NOTIFICATION,
       payload: { notificationId: notification.id },
     })
   }, timeout)
 }
+
+export default notifyHandler
