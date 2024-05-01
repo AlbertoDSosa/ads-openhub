@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import useAudio from 'hooks/useAudio'
 import { Box } from 'components/ui'
 
-function MicTest({ mediaStream, borderColor = 'black' }) {
-  const [running, setRunning, features] = useAudio({ mediaStream })
+function MicTest({ mediaTrack, mediaStream, borderColor = 'black' }) {
+  const [running, setRunning, features] = useAudio({ mediaStream, mediaTrack })
   const [micValue, setMicValue] = useState(0)
 
   useEffect(() => {

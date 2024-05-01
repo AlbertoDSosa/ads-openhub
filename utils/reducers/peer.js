@@ -3,7 +3,7 @@ export const peerInitialState = {}
 export const peerReducers = (actions) => {
   return {
     [actions.ADD_PEER]: (state, action) => {
-      const { peer } = action.payload
+      const peer = action.payload
       const { peers } = state
 
       return { ...state, peers: { ...peers, [peer.id]: peer } }

@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react'
 import Meyda from 'meyda'
 
-const useAudio = ({ mediaStream }) => {
+const useAudio = ({ mediaStream, mediaTrack }) => {
   const [analyser, setAnalyser] = useState(null)
   const [running, setRunning] = useState(false)
   const [features, setFeatures] = useState(null)
 
   useEffect(() => {
-    if (mediaStream) {
+    if (mediaStream || mediaTrack) {
       const audioContext = new AudioContext()
-      const source = audioContext.createMediaStreamSource(mediaStream)
+      let source = null
+
+      if (mediaStream) {
+        source = audioContext.createMediaStreamSource(mediaStream)
+      } else {
+        const audioStream = new MediaStream()
+        audioStream.addTrack(mediaTrack)
+        source = audioContext.createMediaStreamSource(audioStream)
+      }
+
       const _analyser = Meyda.createMeydaAnalyzer({
         audioContext: audioContext,
         source: source,
@@ -31,7 +40,7 @@ const useAudio = ({ mediaStream }) => {
         }
       }
     }
-  }, [mediaStream])
+  }, [mediaStream, mediaTrack])
 
   useEffect(() => {
     if (analyser) {

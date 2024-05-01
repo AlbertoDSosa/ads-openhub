@@ -1,13 +1,24 @@
 import { useRef, useEffect } from 'react'
 
-function CameraPlayer({ mediaStream }) {
+function CameraPlayer({
+  mediaStream,
+  mediaTrack,
+  width = '320',
+  height = '240',
+}) {
   const videoRef = useRef(null)
 
   useEffect(() => {
-    if (mediaStream && mediaStream.active && videoRef.current) {
-      videoRef.current.srcObject = mediaStream
+    if (videoRef.current) {
+      if (mediaStream && mediaStream.active) {
+        videoRef.current.srcObject = mediaStream
+      } else if (mediaTrack) {
+        const videoStream = new MediaStream()
+        videoStream.addTrack(mediaTrack)
+        videoRef.current.srcObject = videoStream
+      }
     }
-  }, [mediaStream])
+  }, [mediaStream, mediaTrack])
 
   function handleCanPlay() {
     videoRef.current.play()
@@ -15,13 +26,14 @@ function CameraPlayer({ mediaStream }) {
 
   return (
     <video
-      width={320}
-      height={240}
+      width={width}
+      height={height}
       ref={videoRef}
       onCanPlay={handleCanPlay}
       autoPlay
       playsInline
       muted
+      controls={false}
     />
   )
 }

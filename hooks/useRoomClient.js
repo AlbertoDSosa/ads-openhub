@@ -1,6 +1,6 @@
 import { useState, useEffect, useReducer } from 'react'
 import randomString from 'random-string'
-import useLocalStorage from 'hooks/useLocalStorage'
+// import useLocalStorage from 'hooks/useLocalStorage'
 
 import RoomClient from '../libs/RoomClient'
 import { reducers, initialState } from '../utils/reducers'
@@ -17,11 +17,11 @@ const reducer = (state, action) => {
 }
 
 const useRoomClient = () => {
-  const [roomInitialState, setRoomInitialState] = useLocalStorage(
-    'roomClient',
-    initialState
-  )
-  const [state, dispatch] = useReducer(reducer, roomInitialState)
+  // const [roomInitialState, setRoomInitialState] = useLocalStorage(
+  //   'roomClient',
+  //   initialState
+  // )
+  const [state, dispatch] = useReducer(reducer, initialState)
   const [roomClient, setRoomClient] = useState(null)
   const [roomClientConstructor, setRoomClientConstructor] = useState(null)
 
@@ -39,12 +39,12 @@ const useRoomClient = () => {
 
   useEffect(() => {
     if (roomClient) {
-      setRoomInitialState(state)
+      // setRoomInitialState(state)
       roomClient.setRoomState(state)
     }
   }, [state, roomClient])
 
-  return { roomClient, setRoomClientConstructor, dispatch }
+  return { state, roomClient, setRoomClientConstructor, dispatch }
 }
 
 export default useRoomClient

@@ -117,7 +117,11 @@ const Hall = ({ meeting }) => {
               height={240}
               borderRadius="borderRadius"
             >
-              <CameraPlayer mediaStream={videoStream} />
+              <CameraPlayer
+                mediaStream={videoStream}
+                width={320}
+                height={240}
+              />
             </Box>
             <Box p={0.5} className={classes.cameraOptions}>
               <Tooltip title="Más opciones">
