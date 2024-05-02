@@ -1,6 +1,6 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
-import MediaSettingsContext from 'contexts/MediaSettings'
+import { useMediaSettings } from 'contexts/MediaSettings'
 import useDevices from 'hooks/useDevices'
 
 import Divider from '@material-ui/core/Divider'
@@ -83,9 +83,11 @@ const Title = withStyles((theme) => ({
 function SettingsModal({ showModal, onClose, label, description }) {
   const classes = useStyles()
   const { mediaDevices } = useDevices()
-  const { currentDevices, audioConstraints, videoConstraints } = useContext(
-    MediaSettingsContext
-  )
+  const {
+    currentDevices,
+    audioConstraints,
+    videoConstraints,
+  } = useMediaSettings()
 
   const [tap, setTap] = useState(0)
   const [mediaSettings, setMediaSettings] = useState(null)

@@ -2,6 +2,9 @@
   "name": "ads-openhub",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "14"
+  },
   "scripts": {
     "https:dev": "node server.js",
     "dev": "next dev",

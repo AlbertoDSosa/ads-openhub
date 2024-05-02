@@ -34,8 +34,8 @@ const useStyles = makeStyles((theme) => ({
 function CameraWindow({
   audioTrack,
   videoTrack,
-  isCameraActive,
-  isMicActive,
+  isCameraActive=true,
+  isMicActive=true,
   toggleCameraActive,
   toggleMicActive,
 }) {

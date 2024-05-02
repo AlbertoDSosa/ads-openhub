@@ -1,7 +1,6 @@
-import { useContext } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
-import MediaSettingsContext from 'contexts/MediaSettings'
+import { useMediaSettings } from 'contexts/MediaSettings'
 import useUserMedia from 'hooks/useUserMedia'
 
 import { TabPanel } from 'components/ui/Tabs'
@@ -29,9 +28,7 @@ const useStyles = makeStyles((theme) => ({
 
 function VideoPanel({ value, index, mediaSettings }) {
   const classes = useStyles()
-  const { changeVideoInput, videoConstraints } = useContext(
-    MediaSettingsContext
-  )
+  const { changeVideoInput, videoConstraints } = useMediaSettings()
   const [mediaStream] = useUserMedia(videoConstraints)
   const { videoInput, videoInputs } = mediaSettings
   const handleVideoSourceChange = (evt, el) => {

@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   carousel: {
     alignItems: 'center',
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'start',
     padding: theme.spacing(1),
     width: '100%',
   },
@@ -154,16 +154,20 @@ const Home = () => {
             display="flex"
             flexDirection="column"
             justifyContent="center"
+            alignItems="center"
           >
             <Text paragraph variant="h5">
-              Reuniones y congresos para todos
+              Reuniones para todos
             </Text>
             <Text variant="body2">
-              La aplicación es totalmente abierta y podrás editar streamings,
-              chatear, gestionar archivos y mucho más.
+              La aplicación es totalmente abierta y podrás chatear con quien quieras.
             </Text>
           </Box>
-          <Box my={1} py={1} display={{ xs: 'block', sm: 'block', md: 'flex' }}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            my={1} py={1}
+          >
             <Box mb={1}>
               <Button
                 className={classes.addMeetingButtom}
@@ -239,7 +243,7 @@ const Home = () => {
           />
         </Grid>
         <Grid className={classes.carousel} item xs={12} sm={5}>
-          <Carousel carouselData={carouselData} width={300} height={180} />
+          <Carousel carouselData={carouselData} width={503} height={340} />
         </Grid>
       </Grid>
     </>

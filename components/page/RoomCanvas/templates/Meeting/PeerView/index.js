@@ -2,7 +2,7 @@ import {} from 'react'
 import CameraWindow from 'components/page/CameraWindow'
 import AudioPlayer from 'components/page/AudioPlayer'
 
-function PeerView({ isMe, audioTrack, videoTrack }) {
+function PeerView({ isMe = false, audioTrack, videoTrack }) {
   return (
     <>
       {isMe ? (

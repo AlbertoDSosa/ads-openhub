@@ -19,7 +19,7 @@ const Database = ({ collection }) => {
         })
     } else {
       return db.get().then(({ docs }) => {
-        console.log(docs)
+        // console.log(docs)
       })
     }
   }

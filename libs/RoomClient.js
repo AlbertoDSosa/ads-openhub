@@ -62,12 +62,12 @@ export default class RoomClient {
     forceTcp,
     forceVP9,
     forceH264,
-    datachannel,
+    datachannel = true,
     displayName,
     handlerName,
-    useSimulcast,
+    useSimulcast = true,
     externalVideo,
-    useSharingSimulcast,
+    useSharingSimulcast = true,
   }) {
     logger.debug(
       'constructor() [roomId:"%s", peerId:"%s", displayName:"%s", device:%s]',

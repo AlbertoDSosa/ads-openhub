@@ -34,7 +34,7 @@ export default function useDatabase({ collection }) {
     }
 
     return db.get().then(({ docs }) => {
-      console.log(docs)
+      // console.log(docs)
     })
   }
 

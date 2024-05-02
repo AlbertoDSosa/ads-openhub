@@ -1,4 +1,4 @@
-import { createContext, useEffect } from 'react'
+import { createContext, useEffect, useContext } from 'react'
 import useRoomClient from 'hooks/useRoomClient'
 import useAuth from 'hooks/useAuth'
 // import MediaSettingsContext from './MediaSettings'
@@ -6,7 +6,6 @@ import useAuth from 'hooks/useAuth'
 const RoomContext = createContext({})
 
 export const RoomProvider = ({ children, roomId }) => {
-  // const {} = useContext(MediaSettingsContext)
   const { user } = useAuth()
   const { state, roomClient, setRoomClientConstructor } = useRoomClient()
 
@@ -36,4 +35,4 @@ export const RoomProvider = ({ children, roomId }) => {
   )
 }
 
-export default RoomContext
+export const useMeetingRoom = () => useContext(RoomContext)

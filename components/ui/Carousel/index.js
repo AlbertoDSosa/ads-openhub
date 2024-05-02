@@ -46,9 +46,11 @@ const useStyles = makeStyles((theme) => ({
   },
   nextButton: {
     right: 5,
+    top: 150
   },
   backButton: {
     left: 7,
+    top: 150
   },
 }))
 
@@ -104,12 +106,14 @@ export default function CustomCarrusel({
       ))}
       <Box p={0} className={classes.slideOverlay}>
         <IconButton
+          size="medium"
           onClick={goBack}
           className={`${classes.directionButton} ${classes.backButton}`}
         >
           <ArrowBackIos />
         </IconButton>
         <IconButton
+          size="medium"
           onClick={goNext}
           className={`${classes.directionButton} ${classes.nextButton}`}
         >

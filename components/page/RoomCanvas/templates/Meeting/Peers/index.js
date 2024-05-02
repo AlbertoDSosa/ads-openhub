@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from 'react'
-import RoomContext from 'contexts/Room'
+import { useEffect, useState } from 'react'
+import { useMeetingRoom } from 'contexts/Room'
 
 import { Box } from 'components/ui'
 import Peer from '../Peer'
 
 function Peers() {
-  const { state } = useContext(RoomContext)
+  const { state } = useMeetingRoom()
   const [peers, setPeers] = useState(null)
   useEffect(() => {
     if (state) {

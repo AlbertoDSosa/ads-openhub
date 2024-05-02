@@ -1,9 +1,9 @@
-import { useEffect, useState, useContext } from 'react'
-import RoomContext from 'contexts/Room'
+import { useEffect, useState } from 'react'
+import { useMeetingRoom } from 'contexts/Room'
 import PeerView from '../PeerView'
 
 function Peer({ peer }) {
-  const { state } = useContext(RoomContext)
+  const { state } = useMeetingRoom()
   const [audioConsumer, setAudioConsumer] = useState(null)
   const [videoConsumer, setVideoConsumer] = useState(null)
 

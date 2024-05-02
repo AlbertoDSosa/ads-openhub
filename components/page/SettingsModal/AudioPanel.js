@@ -1,6 +1,6 @@
-import { useState, useContext, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import MediaSettingsContext from 'contexts/MediaSettings'
+import { useMediaSettings } from 'contexts/MediaSettings'
 import useUserMedia from 'hooks/useUserMedia'
 
 import { Text, Menu, Box, Button, Input } from 'components/ui'
@@ -30,9 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 function AudioPanel({ value, index, mediaSettings }) {
   const classes = useStyles()
-  const { changeAudioInput, changeAudioOutput } = useContext(
-    MediaSettingsContext
-  )
+  const { changeAudioInput, changeAudioOutput } = useMediaSettings()
 
   const { currentAudioDevices, audioDevices, audioConstraints } = mediaSettings
   const { audioInput, audioOutput } = currentAudioDevices

@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext, useContext } from 'react'
 import useConstraints from 'hooks/useConstraints'
 import useLocalStorage from 'hooks/useLocalStorage'
 
@@ -82,4 +82,4 @@ export const MediaSettingsProvider = ({ children }) => {
   )
 }
 
-export default MediaSettingsContext
+export const useMediaSettings = () => useContext(MediaSettingsContext)
